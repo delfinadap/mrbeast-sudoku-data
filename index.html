@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MrBeast Sudoku Data — 6,840 Puzzles from onemil.xyz</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f0f0f; color: #e0e0e0; }
+a { color: #6cb4ee; }
+
+.header { background: #1a1a1a; border-bottom: 1px solid #333; padding: 2rem 1.5rem; text-align: center; }
+.header h1 { font-size: 1.8rem; margin-bottom: 0.4rem; color: #fff; }
+.header p { color: #888; max-width: 700px; margin: 0.25rem auto; font-size: 0.9rem; line-height: 1.4; }
+.links { margin-top: 1rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; }
+.links a { display: inline-block; padding: 0.5rem 1.2rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: background 0.15s; }
+.links .gh { background: #2a8c3a; color: #fff; }
+.links .gh:hover { background: #33a846; }
+.links .dc { background: #5865F2; color: #fff; }
+.links .dc:hover { background: #6d78f7; }
+
+.controls { max-width: 1400px; margin: 1.2rem auto; padding: 0 1rem; display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center; }
+.controls input, .controls select {
+  padding: 0.45rem 0.7rem; border: 1px solid #444; border-radius: 5px;
+  font-size: 0.85rem; background: #1a1a1a; color: #e0e0e0; outline: none;
+}
+.controls input:focus, .controls select:focus { border-color: #2a8c3a; }
+.controls input { flex: 1; min-width: 140px; }
+.controls select { min-width: 110px; }
+.controls .count { font-size: 0.8rem; color: #666; margin-left: auto; font-family: 'Courier New', monospace; }
+
+.grid-container {
+  max-width: 1400px; margin: 0 auto; padding: 0 1rem 1.5rem;
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.75rem;
+}
+.puzzle-card {
+  background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;
+  padding: 0.5rem; text-align: center; transition: border-color 0.15s, background 0.15s;
+}
+.puzzle-card:hover { border-color: #2a8c3a; background: #1a2a1a; }
+.puzzle-card .pid { font-weight: 700; font-size: 0.8rem; color: #ccc; margin-bottom: 0.2rem; font-family: 'Courier New', monospace; }
+.puzzle-card .tags { margin-bottom: 0.3rem; }
+.puzzle-card .tag {
+  display: inline-block; padding: 0.1rem 0.35rem; border-radius: 3px;
+  font-size: 0.6rem; font-weight: 600;
+}
+.tag-mod { background: #1a2a3a; color: #6cb4ee; }
+.tag-clues { background: #2a1a3a; color: #b48cee; }
+
+.sudoku-grid {
+  display: inline-grid; grid-template-columns: repeat(9, 1fr);
+  aspect-ratio: 1; width: 100%; border: 1.5px solid #666;
+}
+.sudoku-grid .cell {
+  display: flex; align-items: center; justify-content: center;
+  font-size: min(1.5vw, 11px); border: 0.5px solid #333;
+  background: #111; aspect-ratio: 1; line-height: 1;
+}
+.sudoku-grid .cell.given { font-weight: 700; color: #fff; background: #1a1a1a; }
+.sudoku-grid .cell.solved { color: #2a8c3a; background: #111; }
+.sudoku-grid .cell:nth-child(9n+3), .sudoku-grid .cell:nth-child(9n+6) { border-right: 1.5px solid #666; }
+.sudoku-grid .cell:nth-child(n+19):nth-child(-n+27),
+.sudoku-grid .cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 1.5px solid #666; }
+
+.pagination {
+  max-width: 1400px; margin: 0 auto 2rem; padding: 0 1rem;
+  display: flex; gap: 0.4rem; justify-content: center; flex-wrap: wrap;
+}
+.pagination button {
+  padding: 0.35rem 0.7rem; border: 1px solid #333; border-radius: 4px;
+  background: #1a1a1a; color: #aaa; cursor: pointer; font-size: 0.8rem; transition: all 0.15s;
+}
+.pagination button.active { background: #2a8c3a; color: #fff; border-color: #2a8c3a; }
+.pagination button:hover:not(.active):not(:disabled) { background: #2a2a2a; color: #fff; }
+.pagination button:disabled { opacity: 0.4; cursor: default; }
+
+.footer { text-align: center; padding: 2rem; color: #555; font-size: 0.75rem; border-top: 1px solid #222; }
+
+@media (max-width: 1100px) { .grid-container { grid-template-columns: repeat(5, 1fr); } }
+@media (max-width: 900px) { .grid-container { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 700px) { .grid-container { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 500px) { .grid-container { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>MrBeast Sudoku Data</h1>
+  <p>6,840 puzzles from <a href="https://www.onemil.xyz">onemil.xyz</a> — clues and solutions.</p>
+  <p>More data may help crack the transform sequence. Submit puzzles as JSON or PDFs via PR.</p>
+  <div class="links">
+    <a class="gh" href="https://github.com/delfinadap/mrbeast-sudoku-data">GitHub — Contribute Data</a>
+    <a class="dc" href="https://discord.gg/KCtjNMJeYv">Join Discord</a>
+  </div>
+</div>
+
+<div class="controls">
+  <input type="text" id="search" placeholder="Search by ID...">
+  <select id="modFilter"><option value="">All mod-25</option></select>
+  <select id="clueFilter"><option value="">All clue counts</option></select>
+  <span class="count" id="resultCount"></span>
+</div>
+
+<div class="pagination" id="pagTop"></div>
+<div class="grid-container" id="list"></div>
+<div class="pagination" id="pagBot"></div>
+
+<script>
+const PER_PAGE = 30;
+let puzzles = [], filtered = [], page = 0;
+
+async function init() {
+  const resp = await fetch('puzzles.json');
+  puzzles = await resp.json();
+  const mods = [...new Set(puzzles.map(p => p.i % 25))].sort((a,b) => a-b);
+  const clues = [...new Set(puzzles.map(p => p.n))].sort((a,b) => a-b);
+  const ms = document.getElementById('modFilter'), cs = document.getElementById('clueFilter');
+  mods.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = 'mod ' + m; ms.appendChild(o); });
+  clues.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c + ' clues'; cs.appendChild(o); });
+  document.getElementById('search').addEventListener('input', () => { page = 0; apply(); });
+  ms.addEventListener('change', () => { page = 0; apply(); });
+  cs.addEventListener('change', () => { page = 0; apply(); });
+  apply();
+}
+
+function apply() {
+  const q = document.getElementById('search').value.trim();
+  const mod = document.getElementById('modFilter').value;
+  const clue = document.getElementById('clueFilter').value;
+  filtered = puzzles.filter(p => {
+    if (q && !String(p.i).includes(q)) return false;
+    if (mod !== '' && p.i % 25 !== parseInt(mod)) return false;
+    if (clue !== '' && p.n !== parseInt(clue)) return false;
+    return true;
+  });
+  document.getElementById('resultCount').textContent = filtered.length + ' puzzles';
+  render();
+}
+
+function render() {
+  const list = document.getElementById('list');
+  const slice = filtered.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
+  list.innerHTML = slice.map(p => {
+    let cells = '';
+    for (let i = 0; i < 81; i++) {
+      cells += '<div class="cell ' + (p.c[i] !== '0' ? 'given' : 'solved') + '">' + p.s[i] + '</div>';
+    }
+    return '<div class="puzzle-card"><div class="pid">#' + p.i + '</div><div class="tags"><span class="tag tag-mod">mod ' + (p.i % 25) + '</span> <span class="tag tag-clues">' + p.n + '</span></div><div class="sudoku-grid">' + cells + '</div></div>';
+  }).join('');
+  renderPag();
+}
+
+function renderPag() {
+  const total = Math.ceil(filtered.length / PER_PAGE);
+  const html = buildPagHtml(total);
+  document.getElementById('pagTop').innerHTML = html;
+  document.getElementById('pagBot').innerHTML = html;
+}
+
+function buildPagHtml(total) {
+  if (total <= 1) return '';
+  let html = '<button ' + (page === 0 ? 'disabled' : 'onclick="go(' + (page-1) + ')"') + '>&laquo; Prev</button>';
+  const show = [0];
+  for (let i = Math.max(1, page - 2); i <= Math.min(total - 2, page + 2); i++) show.push(i);
+  show.push(total - 1);
+  const u = [...new Set(show)].sort((a,b) => a-b);
+  let last = -1;
+  for (const p of u) {
+    if (last >= 0 && p - last > 1) html += '<button disabled>…</button>';
+    html += '<button class="' + (p === page ? 'active' : '') + '" onclick="go(' + p + ')">' + (p + 1) + '</button>';
+    last = p;
+  }
+  html += '<button ' + (page >= total-1 ? 'disabled' : 'onclick="go(' + (page+1) + ')"') + '>Next &raquo;</button>';
+  return html;
+}
+
+function go(p) { page = p; render(); }
+init();
+</script>
+</body>
+</html>
